@@ -1,0 +1,13 @@
+# News Intelligence System - Requirements
+
+# Core - Required
+requests>=2.31.0           # API calls to all services
+python-dotenv>=1.0.0       # Load API keys from .env
+
+# GUI Version (optional)
+# tkinter is usually included with Python
+Pillow>=10.0.0             # Logo display in GUI
+
+# Google Sheets Integration (optional)
+gspread>=5.10.0            # Google Sheets API
+google-auth>=2.22.0        # Google authentication

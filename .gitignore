@@ -1,0 +1,29 @@
+# Environment and secrets
+.env
+*.key
+credentials/
+*_service_account.json
+google_service_account.json
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Output
+output/
+logs/
+*.csv
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Cache
+.cache/
+*.cache
