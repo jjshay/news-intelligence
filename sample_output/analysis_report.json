@@ -1,0 +1,74 @@
+{
+  "article": {
+    "title": "OpenAI Announces GPT-5 with Breakthrough Reasoning Capabilities",
+    "source": "MIT Technology Review",
+    "url": "https://example.com/gpt5-announcement",
+    "date": "2025-01-10"
+  },
+  "analysis": {
+    "individual_scores": {
+      "ChatGPT": {
+        "score": 8.5,
+        "reasoning": "Technically accurate, well-sourced article from reputable publication",
+        "strengths": ["Clear technical explanation", "Balanced perspective"],
+        "concerns": ["Some claims need peer review"]
+      },
+      "Claude": {
+        "score": 7.8,
+        "reasoning": "Valid reporting but headline slightly overstates the findings",
+        "strengths": ["Acknowledges safety concerns", "Quotes multiple experts"],
+        "concerns": ["'Breakthrough' framing contested"]
+      },
+      "Gemini": {
+        "score": 8.9,
+        "reasoning": "Cross-verified with 3 academic preprints and OpenAI technical report",
+        "strengths": ["Verifiable claims", "Accurate benchmarks"],
+        "concerns": ["Missing historical context"]
+      },
+      "Grok": {
+        "score": 7.2,
+        "reasoning": "Follows typical AI hype cycle - every 6 months we see 'breakthrough' claims",
+        "strengths": ["Healthy skepticism"],
+        "concerns": ["Missing practical applications discussion"]
+      },
+      "Perplexity": {
+        "score": 8.6,
+        "reasoning": "VERIFIED: Core claims match published benchmarks and official announcement",
+        "strengths": ["Real-time verification", "Multiple source confirmation"],
+        "concerns": ["'Breakthrough' terminology debated in 2/5 sources"]
+      }
+    },
+    "peer_review": {
+      "pairs": [
+        {"ai1": "ChatGPT", "ai2": "Perplexity", "result": "AGREE", "variance": 0.1},
+        {"ai1": "Claude", "ai2": "Grok", "result": "DISCUSS", "variance": 0.6},
+        {"ai1": "Gemini", "ai2": "Claude", "result": "AGREE", "variance": 1.1}
+      ]
+    },
+    "fact_check": {
+      "claims_verified": 2,
+      "claims_contested": 1,
+      "details": [
+        {"claim": "40% improvement on reasoning benchmarks", "status": "VERIFIED"},
+        {"claim": "Surpasses human performance", "status": "PARTIALLY VERIFIED - narrow tasks only"}
+      ]
+    },
+    "consensus": {
+      "final_score": 8.2,
+      "confidence": "HIGH",
+      "variance": 0.6,
+      "recommendation": "SHARE WITH CONTEXT"
+    },
+    "key_takeaways": [
+      "Core technical claims are accurate and verifiable",
+      "Source (MIT Tech Review) has strong credibility",
+      "Headline framing slightly sensationalized",
+      "Good for professional sharing with context note about narrow vs general capabilities"
+    ]
+  },
+  "metadata": {
+    "processing_time_seconds": 11.3,
+    "estimated_cost_usd": 0.07,
+    "timestamp": "2025-01-10T14:32:18Z"
+  }
+}
