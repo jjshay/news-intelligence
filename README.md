@@ -50,6 +50,43 @@ See `sample_output/analysis_report.json` for example results.
 
 ---
 
+## Architecture
+
+```mermaid
+flowchart TB
+    subgraph Input
+        A[News Article] --> B[Article Parser]
+    end
+
+    subgraph AI["Multi-AI Scoring Engine"]
+        B --> C1[ChatGPT]
+        B --> C2[Claude]
+        B --> C3[Gemini]
+        B --> C4[Grok]
+        B --> C5[Perplexity]
+    end
+
+    subgraph Peer["Peer Review"]
+        C1 & C2 & C3 & C4 & C5 --> D[Score Comparison]
+        D --> E[Dispute Resolution]
+        E --> F[Perplexity Fact-Check]
+    end
+
+    subgraph Output
+        F --> G[Consensus Calculator]
+        G --> H[6th AI Consolidator]
+        H --> I[Final Report]
+    end
+
+    style A fill:#e1f5fe
+    style I fill:#c8e6c9
+    style C1 fill:#fff3e0
+    style C2 fill:#fce4ec
+    style C3 fill:#e8f5e9
+    style C4 fill:#f3e5f5
+    style C5 fill:#e0f7fa
+```
+
 ## How It Works
 
 ```
