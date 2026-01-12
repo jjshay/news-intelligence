@@ -288,31 +288,42 @@ def show_summary():
 
 
 def main():
+    import sys
+    import time
+
+    interactive = sys.stdin.isatty()
+
+    def pause(msg=""):
+        if interactive:
+            input(msg)
+        else:
+            time.sleep(0.5)
+
     print_header("NEWS INTELLIGENCE SYSTEM - DEMO")
 
     print("This demo shows multi-AI news article scoring")
     print("without requiring any API keys.\n")
 
-    input("Press Enter to start the demonstration...")
+    pause("Press Enter to start the demonstration...")
 
     # Run all steps
     step_api_health_check()
-    input("\nPress Enter to see the article...")
+    pause("\nPress Enter to see the article...")
 
     step_show_article()
-    input("\nPress Enter to see individual AI scores...")
+    pause("\nPress Enter to see individual AI scores...")
 
     step_individual_scoring()
-    input("\nPress Enter to see peer pairing...")
+    pause("\nPress Enter to see peer pairing...")
 
     step_peer_pairing()
-    input("\nPress Enter to see Perplexity's verdict...")
+    pause("\nPress Enter to see Perplexity's verdict...")
 
     step_perplexity_verdict()
-    input("\nPress Enter to see final consensus...")
+    pause("\nPress Enter to see final consensus...")
 
     step_final_consensus()
-    input("\nPress Enter to see consolidated insights...")
+    pause("\nPress Enter to see consolidated insights...")
 
     step_consolidated_insights()
 
