@@ -1,0 +1,42 @@
+[
+  {
+    "title": "OpenAI Announces GPT-5 with Breakthrough Reasoning Capabilities",
+    "source": "MIT Technology Review",
+    "url": "https://example.com/gpt5-announcement",
+    "published_date": "2025-01-10",
+    "summary": "Researchers at OpenAI have unveiled GPT-5, demonstrating unprecedented reasoning capabilities. The model shows 40% improvement on graduate-level math and science benchmarks. However, AI safety researchers express concerns about deployment timelines and the need for more robust alignment testing.",
+    "category": "AI/ML"
+  },
+  {
+    "title": "European Union Passes Comprehensive AI Regulation Act",
+    "source": "Reuters",
+    "url": "https://example.com/eu-ai-act",
+    "published_date": "2025-01-09",
+    "summary": "The European Parliament has approved the AI Act, establishing the world's first comprehensive legal framework for artificial intelligence. The regulation categorizes AI systems by risk level and imposes strict requirements on high-risk applications in healthcare, law enforcement, and critical infrastructure.",
+    "category": "Policy"
+  },
+  {
+    "title": "Google DeepMind's AlphaFold 3 Predicts Drug Interactions",
+    "source": "Nature",
+    "url": "https://example.com/alphafold3",
+    "published_date": "2025-01-08",
+    "summary": "DeepMind has released AlphaFold 3, extending protein structure prediction to model drug-protein interactions. Early results suggest the system could accelerate drug discovery timelines by 60%, potentially reducing the average 10-year development cycle significantly.",
+    "category": "Healthcare AI"
+  },
+  {
+    "title": "Anthropic Raises $2B to Advance AI Safety Research",
+    "source": "TechCrunch",
+    "url": "https://example.com/anthropic-funding",
+    "published_date": "2025-01-07",
+    "summary": "AI safety startup Anthropic has closed a $2 billion funding round led by Google and Spark Capital. The company plans to use the funds to expand its Constitutional AI research and develop more interpretable large language models.",
+    "category": "Business"
+  },
+  {
+    "title": "Study: AI-Generated Code Contains 40% More Security Vulnerabilities",
+    "source": "ACM Digital Library",
+    "url": "https://example.com/ai-code-security",
+    "published_date": "2025-01-06",
+    "summary": "A Stanford University study analyzing 10,000 code samples found that AI-generated code contains significantly more security vulnerabilities than human-written code. Researchers recommend mandatory security review for AI-assisted development workflows.",
+    "category": "Security"
+  }
+]

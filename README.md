@@ -1,5 +1,9 @@
 # News Intelligence System
 
+![Python](https://img.shields.io/badge/python-3.9+-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+![AI Models](https://img.shields.io/badge/AI%20Models-5-purple.svg)
+
 **Score and analyze news articles using 5 different AI models - get the smartest insights from multiple perspectives.**
 
 ---
@@ -18,17 +22,28 @@ This tool helps you evaluate news articles using multiple AI "judges":
 
 ---
 
-## Quick Demo
+## Quick Start
 
 ```bash
+# Clone the repo
+git clone https://github.com/jjshay/news-intelligence.git
+cd news-intelligence
+
 # Install dependencies
 pip install -r requirements.txt
 
-# Run the demo (no API keys needed!)
+# Run the interactive demo (no API keys needed!)
 python demo.py
 
-# See how multi-AI scoring works
+# Or run the visual showcase
+python showcase.py
+
+# Try with sample data
+python demo.py --input examples/sample_articles.json
 ```
+
+### Sample Output
+See `sample_output/analysis_report.json` for example results.
 
 ---
 
