@@ -10,7 +10,7 @@
 
 **Score and analyze news articles using 5 different AI models - get the smartest insights from multiple perspectives.**
 
-![Demo Screenshot](assets/demo.png)
+[![Demo](https://asciinema.org/a/PR2XX9dpIx4095He.svg)](https://asciinema.org/a/PR2XX9dpIx4095He)
 
 ---
 
