@@ -27,16 +27,54 @@ except ImportError:
 console = Console() if RICH_AVAILABLE else None
 
 
-# Sample news article for demonstration
-SAMPLE_ARTICLE = {
-    'title': 'AI Breakthrough: New Model Achieves Human-Level Reasoning',
-    'source': 'MIT Technology Review',
-    'date': '2024-01-15',
-    'summary': '''Researchers at a major AI lab have unveiled a new language model that demonstrates unprecedented reasoning capabilities. The model, trained on a novel architecture, shows significant improvements in logical deduction, mathematical problem-solving, and common-sense reasoning tasks.
+# Sample news articles for demonstration
+SAMPLE_ARTICLES = [
+    {
+        'title': 'AI Breakthrough: New Model Achieves Human-Level Reasoning',
+        'source': 'MIT Technology Review',
+        'date': '2024-01-15',
+        'category': 'AI Research',
+        'summary': '''Researchers at a major AI lab have unveiled a new language model that demonstrates unprecedented reasoning capabilities. The model, trained on a novel architecture, shows significant improvements in logical deduction, mathematical problem-solving, and common-sense reasoning tasks.
 
-Early benchmarks suggest the model outperforms previous systems by 15-20% on standard reasoning tests. However, critics point out that the benchmark improvements may not translate to real-world applications, and ethical concerns about AI autonomy remain unaddressed.''',
-    'url': 'https://example.com/ai-breakthrough'
-}
+Early benchmarks suggest the model outperforms previous systems by 15-20% on standard reasoning tests. However, critics point out that the benchmark improvements may not translate to real-world applications.''',
+        'url': 'https://example.com/ai-breakthrough'
+    },
+    {
+        'title': 'European Union Finalizes Comprehensive AI Regulation Framework',
+        'source': 'Reuters',
+        'date': '2024-01-14',
+        'category': 'Policy',
+        'summary': '''The EU has passed landmark legislation requiring AI systems to meet strict transparency and safety standards. Companies deploying high-risk AI must conduct impact assessments and maintain human oversight. Fines up to 6% of global revenue for violations.''',
+        'url': 'https://example.com/eu-ai-act'
+    },
+    {
+        'title': 'OpenAI and Microsoft Announce $10B Partnership Expansion',
+        'source': 'Wall Street Journal',
+        'date': '2024-01-13',
+        'category': 'Business',
+        'summary': '''Microsoft extends its investment in OpenAI with additional $10 billion commitment. The deal includes exclusive cloud computing rights and deeper integration of GPT models into Microsoft products. Analysts expect accelerated enterprise AI adoption.''',
+        'url': 'https://example.com/openai-microsoft'
+    },
+    {
+        'title': 'AI-Generated Art Wins Major Photography Competition, Sparks Debate',
+        'source': 'The Verge',
+        'date': '2024-01-12',
+        'category': 'Culture',
+        'summary': '''An image created using Midjourney won first place at a prestigious photography contest, reigniting debates about AI in creative fields. The artist disclosed AI use but critics argue competitions need clearer categories.''',
+        'url': 'https://example.com/ai-art-debate'
+    },
+    {
+        'title': 'Healthcare AI Detects Early-Stage Cancer with 94% Accuracy',
+        'source': 'Nature Medicine',
+        'date': '2024-01-11',
+        'category': 'Healthcare',
+        'summary': '''A new deep learning system outperforms radiologists in detecting early-stage lung cancer from CT scans. Validated across 50,000 patients in multi-center trial. FDA fast-track approval expected within 6 months.''',
+        'url': 'https://example.com/ai-cancer-detection'
+    },
+]
+
+# For backward compatibility
+SAMPLE_ARTICLE = SAMPLE_ARTICLES[0]
 
 # AI model configurations
 AI_MODELS = {
@@ -347,9 +385,67 @@ def step_consolidated_insights() -> None:
             print(f"  {category}: {rating} - {details}")
 
 
+def show_batch_summary() -> None:
+    """Show summary of all articles analyzed in this session."""
+    print_header("SESSION SUMMARY: ALL ARTICLES")
+
+    # Simulated scores for all articles
+    batch_results = [
+        ("AI Breakthrough: New Model Achieves...", "MIT Tech Review", 7.8, "green", "SHARE"),
+        ("EU Finalizes AI Regulation Framework", "Reuters", 8.5, "green", "SHARE"),
+        ("OpenAI and Microsoft $10B Partnership", "WSJ", 7.2, "green", "SHARE"),
+        ("AI Art Wins Photography Competition", "The Verge", 6.4, "yellow", "REVIEW"),
+        ("Healthcare AI Detects Cancer 94%", "Nature Medicine", 9.1, "green", "SHARE"),
+    ]
+
+    if RICH_AVAILABLE:
+        table = Table(title="📊 Batch Analysis Results (5 Articles)", box=box.ROUNDED)
+        table.add_column("#", justify="right", style="dim", width=3)
+        table.add_column("Article", style="white", max_width=38)
+        table.add_column("Source", style="cyan")
+        table.add_column("Score", justify="center")
+        table.add_column("Action", justify="center")
+
+        for i, (title, source, score, color, action) in enumerate(batch_results, 1):
+            score_bar = "█" * int(score) + "░" * (10 - int(score))
+            action_color = "green" if action == "SHARE" else "yellow"
+            table.add_row(
+                str(i),
+                title,
+                source,
+                f"[{color}]{score_bar}[/{color}] {score:.1f}",
+                f"[{action_color}]{action}[/{action_color}]"
+            )
+
+        console.print(table)
+
+        # Statistics
+        avg_score = sum(r[2] for r in batch_results) / len(batch_results)
+        shareable = sum(1 for r in batch_results if r[4] == "SHARE")
+
+        stats_panel = f"""
+[bold]Session Statistics[/bold]
+
+[cyan]Articles Analyzed:[/cyan]  {len(batch_results)}
+[cyan]Average Score:[/cyan]      {avg_score:.1f}/10
+[cyan]Shareable:[/cyan]          {shareable}/{len(batch_results)} ({shareable/len(batch_results):.0%})
+[cyan]Need Review:[/cyan]        {len(batch_results) - shareable}
+
+[bold]Top Performer:[/bold]
+  [green]Healthcare AI Detects Cancer (9.1)[/green] - Nature Medicine
+
+[bold]Processing Time:[/bold]  12.4 seconds (avg 2.5s/article)
+[bold]API Calls:[/bold]        25 total (5 per article)
+"""
+        console.print(Panel(stats_panel, title="📈 Analytics", border_style="gold1", box=box.ROUNDED))
+    else:
+        for i, (title, source, score, _, action) in enumerate(batch_results, 1):
+            print(f"  {i}. [{score:.1f}] {title[:40]}... - {action}")
+
+
 def show_summary() -> None:
     """Show final summary."""
-    print_header("SUMMARY")
+    print_header("WORKFLOW SUMMARY")
 
     if RICH_AVAILABLE:
         steps = """
@@ -421,6 +517,7 @@ def main() -> None:
 
     step_consolidated_insights()
 
+    show_batch_summary()
     show_summary()
 
     print_header("DEMO COMPLETE")
