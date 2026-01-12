@@ -11,3 +11,4 @@ Pillow>=10.0.0             # Logo display in GUI
 # Google Sheets Integration (optional)
 gspread>=5.10.0            # Google Sheets API
 google-auth>=2.22.0        # Google authentication
+rich>=13.0.0

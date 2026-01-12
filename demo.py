@@ -1,19 +1,30 @@
 #!/usr/bin/env python3
 """
 News Intelligence System Demo
-Demonstrates multi-AI article scoring without needing API keys.
+Demonstrates multi-AI article scoring with rich visual output.
 
 Run: python demo.py
 """
+from __future__ import annotations
 
-import random
-from datetime import datetime
+import sys
+import time
+from typing import Dict, List
 
+# Try to import rich for beautiful output, fall back to basic if not available
+try:
+    from rich.console import Console
+    from rich.table import Table
+    from rich.panel import Panel
+    from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
+    from rich.layout import Layout
+    from rich.text import Text
+    from rich import box
+    RICH_AVAILABLE = True
+except ImportError:
+    RICH_AVAILABLE = False
 
-def print_header(text):
-    print(f"\n{'='*70}")
-    print(f" {text}")
-    print(f"{'='*70}\n")
+console = Console() if RICH_AVAILABLE else None
 
 
 # Sample news article for demonstration
@@ -21,316 +32,403 @@ SAMPLE_ARTICLE = {
     'title': 'AI Breakthrough: New Model Achieves Human-Level Reasoning',
     'source': 'MIT Technology Review',
     'date': '2024-01-15',
-    'summary': '''
-    Researchers at a major AI lab have unveiled a new language model that
-    demonstrates unprecedented reasoning capabilities. The model, trained on
-    a novel architecture, shows significant improvements in logical deduction,
-    mathematical problem-solving, and common-sense reasoning tasks.
+    'summary': '''Researchers at a major AI lab have unveiled a new language model that demonstrates unprecedented reasoning capabilities. The model, trained on a novel architecture, shows significant improvements in logical deduction, mathematical problem-solving, and common-sense reasoning tasks.
 
-    Early benchmarks suggest the model outperforms previous systems by 15-20%
-    on standard reasoning tests. However, critics point out that the benchmark
-    improvements may not translate to real-world applications, and ethical
-    concerns about AI autonomy remain unaddressed.
-    ''',
+Early benchmarks suggest the model outperforms previous systems by 15-20% on standard reasoning tests. However, critics point out that the benchmark improvements may not translate to real-world applications, and ethical concerns about AI autonomy remain unaddressed.''',
     'url': 'https://example.com/ai-breakthrough'
 }
 
-# AI model personalities for realistic simulation
-AI_PERSONALITIES = {
-    'ChatGPT': {
-        'style': 'balanced and thorough',
-        'focus': 'broad knowledge synthesis',
-        'bias': 'tends toward optimistic interpretations'
-    },
-    'Claude': {
-        'style': 'nuanced and careful',
-        'focus': 'safety and ethical implications',
-        'bias': 'cautious about overstated claims'
-    },
-    'Gemini': {
-        'style': 'data-driven and technical',
-        'focus': 'verification against known facts',
-        'bias': 'favors quantifiable metrics'
-    },
-    'Grok': {
-        'style': 'direct and contrarian',
-        'focus': 'challenging assumptions',
-        'bias': 'skeptical of mainstream narratives'
-    },
-    'Perplexity': {
-        'style': 'citation-heavy and current',
-        'focus': 'real-time fact verification',
-        'bias': 'prefers recent sources'
-    }
+# AI model configurations
+AI_MODELS = {
+    'ChatGPT': {'color': 'green', 'icon': '🟢', 'score': 8},
+    'Claude': {'color': 'magenta', 'icon': '🟣', 'score': 7},
+    'Gemini': {'color': 'blue', 'icon': '🔵', 'score': 9},
+    'Grok': {'color': 'red', 'icon': '🔴', 'score': 7},
+    'Perplexity': {'color': 'cyan', 'icon': '🔷', 'score': 8},
 }
 
-# Simulated AI evaluations
 SIMULATED_SCORES = {
     'ChatGPT': {
         'score': 8,
-        'reasoning': 'Well-written article from reputable source. Technical claims are consistent with recent AI developments. Would benefit from more specific methodology details.',
-        'strengths': ['Clear explanation of complex topic', 'Acknowledges limitations'],
-        'concerns': ['Some claims need more context']
+        'reasoning': 'Well-written article from reputable source. Technical claims consistent with recent AI developments.',
+        'strengths': ['Clear explanation', 'Acknowledges limitations'],
+        'concerns': ['Some claims need context']
     },
     'Claude': {
         'score': 7,
-        'reasoning': 'Solid reporting but headline may overstate findings. The "human-level" claim needs more nuance - the benchmarks cited measure narrow capabilities.',
-        'strengths': ['Balanced view including critics', 'Mentions ethical concerns'],
-        'concerns': ['Headline could be misleading', 'Missing regulatory perspective']
+        'reasoning': 'Solid reporting but headline may overstate findings. "Human-level" claim needs more nuance.',
+        'strengths': ['Balanced view', 'Mentions ethics'],
+        'concerns': ['Headline misleading', 'Missing regulation']
     },
     'Gemini': {
         'score': 9,
-        'reasoning': 'Cross-referenced with 3 recent papers from the same lab. The 15-20% improvement claim aligns with published pre-prints. Technically accurate reporting.',
-        'strengths': ['Verifiable claims', 'Timely topic'],
-        'concerns': ['Could include more historical context']
+        'reasoning': 'Cross-referenced with 3 papers. 15-20% improvement aligns with pre-prints. Technically accurate.',
+        'strengths': ['Verifiable claims', 'Timely'],
+        'concerns': ['Needs historical context']
     },
     'Grok': {
         'score': 7,
-        'reasoning': 'Interesting but follows typical AI hype cycle pattern. Every 6 months we see "breakthrough" claims. The real question: when will this help regular people?',
+        'reasoning': 'Follows typical AI hype cycle. Every 6 months we see "breakthrough" claims.',
         'strengths': ['Acknowledges skeptics'],
-        'concerns': ['Missing practical applications', 'Somewhat sensationalized']
+        'concerns': ['Missing applications', 'Sensationalized']
     },
     'Perplexity': {
         'score': 8,
-        'reasoning': 'Verified: MIT Tech Review is Tier-1 source. Claims checked against 4 sources (2 academic, 2 industry). Main claim accurate but "human-level" framing contested in 2 sources.',
-        'strengths': ['Multiple verification points', 'Source credibility high'],
-        'concerns': ['Framing debated in academic circles']
+        'reasoning': 'MIT Tech Review is Tier-1. Claims checked against 4 sources. Main claim accurate.',
+        'strengths': ['Multiple verifications', 'High credibility'],
+        'concerns': ['Framing debated']
     }
 }
 
 
-def step_api_health_check():
-    """Simulate API health check"""
+def print_header(text: str) -> None:
+    """Print a formatted header."""
+    if RICH_AVAILABLE:
+        console.print()
+        console.rule(f"[bold cyan]{text}[/bold cyan]", style="cyan")
+        console.print()
+    else:
+        print(f"\n{'='*70}")
+        print(f" {text}")
+        print(f"{'='*70}\n")
+
+
+def show_banner() -> None:
+    """Display the application banner."""
+    if RICH_AVAILABLE:
+        banner = """
+[bold cyan]╔═══════════════════════════════════════════════════════════════════╗
+║[/bold cyan] [bold gold1]  _   _                      ___       _       _ _ _                [/bold gold1][bold cyan]║
+║[/bold cyan] [bold gold1] | \ | | _____      _____   |_ _|_ __ | |_ ___| | (_) __ _  ___ ___ [/bold gold1][bold cyan]║
+║[/bold cyan] [bold gold1] |  \| |/ _ \ \ /\ / / __|   | || '_ \| __/ _ \ | | |/ _` |/ _ \ _ \[/bold gold1][bold cyan]║
+║[/bold cyan] [bold gold1] | |\  |  __/\ V  V /\__ \   | || | | | ||  __/ | | | (_| |  __/ | |[/bold gold1][bold cyan]║
+║[/bold cyan] [bold gold1] |_| \_|\___| \_/\_/ |___/  |___|_| |_|\__\___|_|_|_|\__, |\___|_| |[/bold gold1][bold cyan]║
+║[/bold cyan] [bold gold1]                                                     |___/         [/bold gold1][bold cyan]║
+║[/bold cyan]                                                                       [bold cyan]║
+║[/bold cyan]           [bold white]Multi-AI Article Scoring System[/bold white]                        [bold cyan]║
+╚═══════════════════════════════════════════════════════════════════╝[/bold cyan]
+"""
+        console.print(banner)
+    else:
+        print("\n" + "="*70)
+        print("  NEWS INTELLIGENCE - Multi-AI Article Scoring System")
+        print("="*70 + "\n")
+
+
+def step_api_health_check() -> bool:
+    """Simulate API health check with visual progress."""
     print_header("STEP 0: API HEALTH CHECK")
 
-    print("Checking AI engines...\n")
+    if RICH_AVAILABLE:
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+            console=console
+        ) as progress:
+            task = progress.add_task("[cyan]Checking AI engines...", total=5)
 
-    models = ['ChatGPT', 'Claude', 'Gemini', 'Grok', 'Perplexity']
-    for model in models:
-        # Simulate check with random delay representation
-        print(f"  {model:12s} ... OK")
+            for model, config in AI_MODELS.items():
+                time.sleep(0.3)
+                progress.update(task, advance=1, description=f"[{config['color']}]Checking {model}...")
 
-    print("\n  All 5 AI engines operational")
-    print("  Ready for multi-model analysis")
+        # Show results table
+        table = Table(title="API Status", box=box.ROUNDED)
+        table.add_column("AI Model", style="cyan")
+        table.add_column("Status", justify="center")
+        table.add_column("Latency", justify="right")
+
+        for model, config in AI_MODELS.items():
+            table.add_row(
+                f"{config['icon']} {model}",
+                "[green]● Online[/green]",
+                f"[dim]{42 + hash(model) % 50}ms[/dim]"
+            )
+
+        console.print(table)
+        console.print("\n[bold green]✓ All 5 AI engines operational[/bold green]")
+    else:
+        print("Checking AI engines...\n")
+        for model in AI_MODELS:
+            print(f"  {model:12s} ... OK")
+        print("\n  All 5 AI engines operational")
 
     return True
 
 
-def step_show_article():
-    """Display the article being analyzed"""
+def step_show_article() -> None:
+    """Display the article being analyzed."""
     print_header("ARTICLE TO ANALYZE")
 
-    print(f"TITLE:  {SAMPLE_ARTICLE['title']}")
-    print(f"SOURCE: {SAMPLE_ARTICLE['source']}")
-    print(f"DATE:   {SAMPLE_ARTICLE['date']}")
-    print(f"\nSUMMARY:")
-    print(f"-" * 60)
-    for line in SAMPLE_ARTICLE['summary'].strip().split('\n'):
-        print(f"  {line.strip()}")
-    print(f"-" * 60)
+    if RICH_AVAILABLE:
+        article_panel = Panel(
+            f"""[bold]{SAMPLE_ARTICLE['title']}[/bold]
+
+[dim]Source:[/dim] [cyan]{SAMPLE_ARTICLE['source']}[/cyan]
+[dim]Date:[/dim] [cyan]{SAMPLE_ARTICLE['date']}[/cyan]
+
+[dim]Summary:[/dim]
+{SAMPLE_ARTICLE['summary']}""",
+            title="📰 Article",
+            border_style="cyan",
+            box=box.ROUNDED
+        )
+        console.print(article_panel)
+    else:
+        print(f"TITLE:  {SAMPLE_ARTICLE['title']}")
+        print(f"SOURCE: {SAMPLE_ARTICLE['source']}")
+        print(f"DATE:   {SAMPLE_ARTICLE['date']}")
+        print(f"\nSUMMARY:\n{SAMPLE_ARTICLE['summary']}")
 
 
-def step_individual_scoring():
-    """Show individual AI scores"""
+def step_individual_scoring() -> None:
+    """Show individual AI scores with visual bars."""
     print_header("STEP 1: INDIVIDUAL AI SCORING")
 
-    print("Each AI evaluates the article independently...\n")
+    if RICH_AVAILABLE:
+        console.print("[dim]Each AI evaluates the article independently...[/dim]\n")
 
-    for model, data in SIMULATED_SCORES.items():
-        print(f"{'─'*60}")
-        print(f" {model.upper()}")
-        print(f"{'─'*60}")
-        print(f"  Score: {data['score']}/10")
-        print(f"  Style: {AI_PERSONALITIES[model]['style']}")
-        print(f"\n  Reasoning:")
-        # Wrap text nicely
-        words = data['reasoning'].split()
-        line = "    "
-        for word in words:
-            if len(line) + len(word) > 65:
-                print(line)
-                line = "    " + word + " "
-            else:
-                line += word + " "
-        if line.strip():
-            print(line)
+        for model, data in SIMULATED_SCORES.items():
+            config = AI_MODELS[model]
+            score = data['score']
+            bar = "█" * score + "░" * (10 - score)
 
-        print(f"\n  Strengths: {', '.join(data['strengths'])}")
-        print(f"  Concerns: {', '.join(data['concerns'])}")
-        print()
+            panel_content = f"""[bold]Score:[/bold] [{config['color']}]{bar}[/{config['color']}] [bold]{score}/10[/bold]
+
+[bold]Reasoning:[/bold]
+{data['reasoning']}
+
+[green]✓ Strengths:[/green] {', '.join(data['strengths'])}
+[yellow]⚠ Concerns:[/yellow] {', '.join(data['concerns'])}"""
+
+            panel = Panel(
+                panel_content,
+                title=f"{config['icon']} {model}",
+                border_style=config['color'],
+                box=box.ROUNDED
+            )
+            console.print(panel)
+    else:
+        for model, data in SIMULATED_SCORES.items():
+            print(f"\n{model}: {data['score']}/10")
+            print(f"  {data['reasoning']}")
 
 
-def step_peer_pairing():
-    """Show peer review process"""
+def step_peer_pairing() -> None:
+    """Show peer review process."""
     print_header("STEP 2: PEER PAIRING")
 
-    print("AIs randomly paired to compare evaluations...")
-    print("(Perplexity always participates as fact-checker)\n")
-
-    # Simulate random pairing
     pairs = [
-        ('ChatGPT', 'Perplexity'),
-        ('Claude', 'Grok'),
-        ('Gemini', 'Claude')
+        ('ChatGPT', 'Perplexity', 'AGREEMENT'),
+        ('Claude', 'Grok', 'AGREEMENT'),
+        ('Gemini', 'Claude', 'DISAGREEMENT')
     ]
 
-    for ai1, ai2 in pairs:
-        score1 = SIMULATED_SCORES[ai1]['score']
-        score2 = SIMULATED_SCORES[ai2]['score']
-        diff = abs(score1 - score2)
+    if RICH_AVAILABLE:
+        console.print("[dim]AIs randomly paired to compare evaluations...[/dim]\n")
 
-        print(f"  PAIR: {ai1} ({score1}/10) vs {ai2} ({score2}/10)")
+        table = Table(title="Peer Review Pairs", box=box.ROUNDED)
+        table.add_column("AI 1", style="cyan")
+        table.add_column("Score", justify="center")
+        table.add_column("vs", justify="center", style="dim")
+        table.add_column("AI 2", style="magenta")
+        table.add_column("Score", justify="center")
+        table.add_column("Result", justify="center")
 
-        if diff <= 1:
-            print(f"    Result: AGREEMENT (diff: {diff})")
-        else:
-            print(f"    Result: DISAGREEMENT (diff: {diff})")
-            # Show simulated discussion
-            if ai1 == 'Claude' and ai2 == 'Grok':
-                print(f"    Discussion: Grok challenges Claude's caution about claims")
+        for ai1, ai2, result in pairs:
+            score1 = SIMULATED_SCORES[ai1]['score']
+            score2 = SIMULATED_SCORES[ai2]['score']
+            result_style = "green" if result == "AGREEMENT" else "yellow"
 
-        print()
+            table.add_row(
+                ai1, str(score1), "⚔", ai2, str(score2),
+                f"[{result_style}]{result}[/{result_style}]"
+            )
 
-
-def step_perplexity_verdict():
-    """Show Perplexity's final verdict"""
-    print_header("STEP 3: PERPLEXITY FINAL VERDICT")
-
-    print("Perplexity (with web access) has final say on disputed points...\n")
-
-    print("  FACT CHECK RESULTS:")
-    print("  ┌─────────────────────────────────────────────────────────┐")
-    print("  │ Claim: '15-20% improvement on reasoning tests'         │")
-    print("  │ Verdict: VERIFIED - matches published benchmarks       │")
-    print("  ├─────────────────────────────────────────────────────────┤")
-    print("  │ Claim: 'Human-level reasoning'                         │")
-    print("  │ Verdict: PARTIALLY VERIFIED - true for narrow tasks,   │")
-    print("  │          contested for general reasoning               │")
-    print("  └─────────────────────────────────────────────────────────┘")
+        console.print(table)
+    else:
+        for ai1, ai2, result in pairs:
+            print(f"  {ai1} vs {ai2}: {result}")
 
 
-def step_final_consensus():
-    """Show final consolidated score"""
+def step_perplexity_verdict() -> None:
+    """Show Perplexity's final verdict."""
+    print_header("STEP 3: PERPLEXITY FACT CHECK")
+
+    if RICH_AVAILABLE:
+        verdicts = [
+            ("15-20% improvement on reasoning tests", "VERIFIED", "green", "Matches published benchmarks"),
+            ("Human-level reasoning", "PARTIAL", "yellow", "True for narrow tasks, contested for general"),
+        ]
+
+        table = Table(title="🔍 Fact Check Results", box=box.ROUNDED)
+        table.add_column("Claim", style="white")
+        table.add_column("Verdict", justify="center")
+        table.add_column("Details", style="dim")
+
+        for claim, verdict, color, details in verdicts:
+            table.add_row(claim, f"[{color}]{verdict}[/{color}]", details)
+
+        console.print(table)
+    else:
+        print("  Claim: '15-20% improvement' - VERIFIED")
+        print("  Claim: 'Human-level reasoning' - PARTIALLY VERIFIED")
+
+
+def step_final_consensus() -> None:
+    """Show final consolidated score with visual gauge."""
     print_header("STEP 4: FINAL CONSENSUS")
 
-    # Calculate average
     scores = [d['score'] for d in SIMULATED_SCORES.values()]
     avg_score = sum(scores) / len(scores)
 
-    print(f"  Individual Scores:")
-    for model, data in SIMULATED_SCORES.items():
-        bar = "█" * data['score'] + "░" * (10 - data['score'])
-        print(f"    {model:12s} [{bar}] {data['score']}/10")
+    if RICH_AVAILABLE:
+        # Score breakdown table
+        table = Table(title="Score Breakdown", box=box.ROUNDED)
+        table.add_column("AI Model", style="cyan")
+        table.add_column("Score", justify="center")
+        table.add_column("Visual", justify="left")
 
-    print(f"\n  {'─'*50}")
-    print(f"  FINAL SCORE: {avg_score:.1f}/10")
-    print(f"  CONFIDENCE: High (low variance between evaluators)")
-    print(f"  {'─'*50}")
+        for model, data in SIMULATED_SCORES.items():
+            config = AI_MODELS[model]
+            score = data['score']
+            bar = f"[{config['color']}]{'█' * score}[/{config['color']}][dim]{'░' * (10 - score)}[/dim]"
+            table.add_row(f"{config['icon']} {model}", f"{score}/10", bar)
+
+        console.print(table)
+
+        # Final score panel
+        score_color = "green" if avg_score >= 7.5 else "yellow" if avg_score >= 5 else "red"
+
+        gauge = f"""
+[bold]FINAL SCORE[/bold]
+
+    [{score_color}]╔══════════════════════════════════════╗
+    ║                                      ║
+    ║            {avg_score:.1f} / 10               ║
+    ║                                      ║
+    ╚══════════════════════════════════════╝[/{score_color}]
+
+[dim]Confidence:[/dim] [green]HIGH[/green] (low variance between evaluators)
+[dim]Variance:[/dim]   ±0.8 points
+"""
+        console.print(Panel(gauge, title="📊 Consensus Score", border_style=score_color, box=box.DOUBLE))
+    else:
+        print(f"  FINAL SCORE: {avg_score:.1f}/10")
+        for model, data in SIMULATED_SCORES.items():
+            bar = "█" * data['score'] + "░" * (10 - data['score'])
+            print(f"    {model:12s} [{bar}] {data['score']}/10")
 
 
-def step_consolidated_insights():
-    """Show final bullet points"""
+def step_consolidated_insights() -> None:
+    """Show final insights."""
     print_header("STEP 5: CONSOLIDATED INSIGHTS")
 
-    print("  6th AI call synthesizes all opinions into key takeaways:\n")
-
     insights = [
-        "FACTUAL ACCURACY: High - Claims verified by Perplexity against published sources; 15-20% improvement claim is accurate",
-        "SOURCE QUALITY: Excellent - MIT Technology Review is Tier-1 publication; article acknowledges limitations appropriately",
-        "HEADLINE CONCERN: Moderate - 'Human-level' framing debated; Claude and Grok flag potential overstatement",
-        "RECOMMENDATION: Share with context - Good for professional network; add note about narrow vs general capabilities"
+        ("FACTUAL ACCURACY", "High", "green", "Claims verified against published sources"),
+        ("SOURCE QUALITY", "Excellent", "green", "MIT Tech Review is Tier-1 publication"),
+        ("HEADLINE CONCERN", "Moderate", "yellow", "'Human-level' framing debated"),
+        ("RECOMMENDATION", "Share with context", "cyan", "Good for professional network"),
     ]
 
-    for i, insight in enumerate(insights, 1):
-        parts = insight.split(' - ')
-        header = parts[0]
-        body = parts[1] if len(parts) > 1 else ""
+    if RICH_AVAILABLE:
+        table = Table(title="📋 Key Insights", box=box.ROUNDED)
+        table.add_column("Category", style="bold")
+        table.add_column("Rating", justify="center")
+        table.add_column("Details", style="dim")
 
-        print(f"  {i}. {header}")
-        if body:
-            # Wrap body text
-            words = body.split()
-            line = "     "
-            for word in words:
-                if len(line) + len(word) > 65:
-                    print(line)
-                    line = "     " + word + " "
-                else:
-                    line += word + " "
-            if line.strip():
-                print(line)
-        print()
+        for category, rating, color, details in insights:
+            table.add_row(category, f"[{color}]{rating}[/{color}]", details)
+
+        console.print(table)
+    else:
+        for category, rating, _, details in insights:
+            print(f"  {category}: {rating} - {details}")
 
 
-def show_summary():
-    """Show final summary and next steps"""
+def show_summary() -> None:
+    """Show final summary."""
     print_header("SUMMARY")
 
-    print("This demo showed how the News Intelligence System works:")
-    print()
-    print("  1. HEALTH CHECK  - Verify all 5 AI APIs are operational")
-    print("  2. INDIVIDUAL    - Each AI scores independently")
-    print("  3. PEER REVIEW   - AIs compare and discuss scores")
-    print("  4. FACT CHECK    - Perplexity verifies disputed claims")
-    print("  5. CONSENSUS     - Calculate weighted final score")
-    print("  6. INSIGHTS      - Synthesize key takeaways")
-    print()
-    print("Benefits of Multi-AI Analysis:")
-    print("  - No single AI bias dominates")
-    print("  - Real-time fact verification")
-    print("  - Diverse perspectives caught more issues")
-    print("  - Higher confidence in final assessment")
-    print()
-    print("To use with real articles:")
-    print("  1. Get API keys (see README.md)")
-    print("  2. Configure .env file")
-    print("  3. Run: python fetch_news.py")
+    if RICH_AVAILABLE:
+        steps = """
+[cyan]1.[/cyan] [bold]HEALTH CHECK[/bold]  → Verify all 5 AI APIs operational
+[cyan]2.[/cyan] [bold]INDIVIDUAL[/bold]    → Each AI scores independently
+[cyan]3.[/cyan] [bold]PEER REVIEW[/bold]   → AIs compare and discuss scores
+[cyan]4.[/cyan] [bold]FACT CHECK[/bold]    → Perplexity verifies disputed claims
+[cyan]5.[/cyan] [bold]CONSENSUS[/bold]     → Calculate weighted final score
+[cyan]6.[/cyan] [bold]INSIGHTS[/bold]      → Synthesize key takeaways
+
+[bold green]Benefits of Multi-AI Analysis:[/bold green]
+  • No single AI bias dominates
+  • Real-time fact verification
+  • Diverse perspectives catch more issues
+  • Higher confidence in final assessment
+"""
+        console.print(Panel(steps, title="How It Works", border_style="cyan", box=box.ROUNDED))
+    else:
+        print("  1. HEALTH CHECK  - Verify all 5 AI APIs")
+        print("  2. INDIVIDUAL    - Each AI scores independently")
+        print("  3. PEER REVIEW   - AIs compare and discuss")
+        print("  4. FACT CHECK    - Perplexity verifies claims")
+        print("  5. CONSENSUS     - Calculate final score")
+        print("  6. INSIGHTS      - Synthesize takeaways")
 
 
-def main():
-    import sys
-    import time
-
+def main() -> None:
+    """Main entry point."""
     interactive = sys.stdin.isatty()
 
-    def pause(msg=""):
+    def pause(msg: str = "") -> None:
         if interactive:
-            input(msg)
+            if RICH_AVAILABLE:
+                console.print(f"\n[dim]{msg}[/dim]")
+            else:
+                print(f"\n{msg}")
+            input()
         else:
-            time.sleep(0.5)
+            time.sleep(0.3)
 
-    print_header("NEWS INTELLIGENCE SYSTEM - DEMO")
+    show_banner()
 
-    print("This demo shows multi-AI news article scoring")
-    print("without requiring any API keys.\n")
+    if RICH_AVAILABLE:
+        console.print("[dim]This demo shows multi-AI news article scoring")
+        console.print("without requiring any API keys.[/dim]\n")
+    else:
+        print("This demo shows multi-AI news article scoring")
+        print("without requiring any API keys.\n")
 
     pause("Press Enter to start the demonstration...")
 
-    # Run all steps
     step_api_health_check()
-    pause("\nPress Enter to see the article...")
+    pause("Press Enter to see the article...")
 
     step_show_article()
-    pause("\nPress Enter to see individual AI scores...")
+    pause("Press Enter to see individual AI scores...")
 
     step_individual_scoring()
-    pause("\nPress Enter to see peer pairing...")
+    pause("Press Enter to see peer pairing...")
 
     step_peer_pairing()
-    pause("\nPress Enter to see Perplexity's verdict...")
+    pause("Press Enter to see Perplexity's verdict...")
 
     step_perplexity_verdict()
-    pause("\nPress Enter to see final consensus...")
+    pause("Press Enter to see final consensus...")
 
     step_final_consensus()
-    pause("\nPress Enter to see consolidated insights...")
+    pause("Press Enter to see consolidated insights...")
 
     step_consolidated_insights()
 
     show_summary()
 
     print_header("DEMO COMPLETE")
-    print("Run 'python fetch_news.py' with API keys for real analysis!")
+
+    if RICH_AVAILABLE:
+        console.print("[bold green]✓[/bold green] Run [cyan]'python fetch_news.py'[/cyan] with API keys for real analysis!")
+    else:
+        print("Run 'python fetch_news.py' with API keys for real analysis!")
 
 
 if __name__ == "__main__":
