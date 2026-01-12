@@ -1,6 +1,9 @@
 # News Intelligence System
 
 ![CI](https://github.com/jjshay/news-intelligence/workflows/CI/badge.svg)
+![CodeQL](https://github.com/jjshay/news-intelligence/workflows/CodeQL/badge.svg)
+[![codecov](https://codecov.io/gh/jjshay/news-intelligence/branch/main/graph/badge.svg)](https://codecov.io/gh/jjshay/news-intelligence)
+![Release](https://img.shields.io/github/v/release/jjshay/news-intelligence)
 ![Python](https://img.shields.io/badge/python-3.9+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![AI Models](https://img.shields.io/badge/AI%20Models-5-purple.svg)
