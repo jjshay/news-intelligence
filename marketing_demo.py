@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Marketing Demo - News Intelligence"""
+"""News Intelligence - Marketing Demo"""
 import time
 import sys
 
@@ -7,125 +7,159 @@ try:
     from rich.console import Console
     from rich.panel import Panel
     from rich.table import Table
+    from rich.align import Align
     from rich import box
-    console = Console()
 except ImportError:
     print("Run: pip install rich")
     sys.exit(1)
 
-def pause(seconds=2):
-    time.sleep(seconds)
+console = Console()
 
-def clear():
-    console.clear()
+def pause(s=1.5):
+    time.sleep(s)
 
-# SCENE 1: Hook
-clear()
-console.print("\n" * 5)
-console.print("[bold yellow]                    TIRED OF READING FAKE NEWS?[/bold yellow]", justify="center")
+def step(text):
+    console.print(f"\n[bold white on #1a1a2e]  {text}  [/]\n")
+    pause(0.8)
+
+# INTRO
+console.clear()
+console.print()
+intro = Panel(
+    Align.center("[bold yellow]NEWS INTELLIGENCE[/]\n\n[white]Multi-AI Article Scoring System[/]"),
+    border_style="cyan",
+    width=60,
+    padding=(1, 2)
+)
+console.print(intro)
 pause(2)
 
-# SCENE 2: Problem
-clear()
-console.print("\n" * 3)
-console.print(Panel("""
-[bold red]THE PROBLEM:[/bold red]
+# STEP 1
+step("STEP 1: SUBMIT ARTICLE URL")
 
-   • One AI can be wrong
-   • Bias exists in every model
-   • No single source of truth
-
-[dim]You need MULTIPLE perspectives.[/dim]
-""", title="❌ Single AI = Single Point of Failure", border_style="red", width=60), justify="center")
-pause(3)
-
-# SCENE 3: Solution
-clear()
-console.print("\n" * 3)
-console.print(Panel("""
-[bold green]THE SOLUTION:[/bold green]
-
-   ✓ 5 AI models analyze every article
-   ✓ They debate and fact-check each other
-   ✓ You get the CONSENSUS score
-
-[bold]Only trust news when 4+ AIs agree.[/bold]
-""", title="✅ News Intelligence = 5 AIs Working Together", border_style="green", width=60), justify="center")
-pause(3)
-
-# SCENE 4: Example
-clear()
-console.print("\n\n")
-console.print("[bold cyan]              📰 WATCH IT IN ACTION[/bold cyan]", justify="center")
-console.print()
+console.print("[dim]$[/] python news_scorer.py [cyan]\"https://reuters.com/ai-breakthrough\"[/]\n")
 pause(1)
 
-console.print(Panel("""
-[bold]"AI Breakthrough: New Model Achieves Human-Level Reasoning"[/bold]
+console.print("  Fetching article.........", end="")
+pause(0.6)
+console.print(" [green]Done[/]")
 
-Source: MIT Technology Review
-""", title="Article to Analyze", border_style="cyan", width=70), justify="center")
-pause(2)
+console.print("  Extracting text..........", end="")
+pause(0.5)
+console.print(" [green]1,247 words[/]")
 
-# SCENE 5: AI Scoring
-clear()
-console.print("\n\n")
-console.print("[bold magenta]              🤖 5 AIs SCORE THE ARTICLE[/bold magenta]", justify="center")
-console.print()
-pause(1)
+console.print("  Detecting language.......", end="")
+pause(0.3)
+console.print(" [green]English[/]")
 
-table = Table(box=box.ROUNDED, width=60)
-table.add_column("AI Model", style="cyan", justify="center")
-table.add_column("Score", justify="center")
-table.add_column("Verdict", justify="center")
+pause(0.8)
+
+article = Panel(
+    "[bold]AI Diagnostics Outperform Doctors in Trial[/]\n\n"
+    "[dim]Source:[/]     Reuters Health\n"
+    "[dim]Author:[/]     Dr. Emily Watson\n"
+    "[dim]Published:[/]  January 11, 2024",
+    title="[cyan]Article Loaded[/]",
+    border_style="cyan",
+    width=55
+)
+console.print(article)
+pause(1.5)
+
+# STEP 2
+step("STEP 2: QUERY 5 AI MODELS")
 
 models = [
-    ("ChatGPT", "8/10", "[green]✓ Trustworthy[/green]"),
-    ("Claude", "7/10", "[green]✓ Trustworthy[/green]"),
-    ("Gemini", "9/10", "[green]✓ Verified[/green]"),
-    ("Grok", "7/10", "[yellow]⚠ Some Hype[/yellow]"),
-    ("Perplexity", "8/10", "[green]✓ Fact-Checked[/green]"),
+    ("Claude 3.5", "Anthropic", 9.2),
+    ("GPT-4", "OpenAI", 8.8),
+    ("Gemini", "Google", 9.0),
+    ("Grok-2", "xAI", 8.6),
+    ("Perplexity", "Perplexity AI", 9.1),
 ]
 
-for model, score, verdict in models:
-    table.add_row(model, score, verdict)
-    console.print(table, justify="center")
-    pause(0.5)
-    console.clear()
-    console.print("\n\n")
-    console.print("[bold magenta]              🤖 5 AIs SCORE THE ARTICLE[/bold magenta]", justify="center")
-    console.print()
+for i, (name, provider, score) in enumerate(models, 1):
+    console.print(f"  [{i}/5] [bold]{name}[/] ({provider})...", end="")
+    pause(0.7)
+    bar = "[green]" + "█" * int(score) + "[/][dim]" + "░" * (10 - int(score)) + "[/]"
+    console.print(f" {bar} [cyan]{score}[/]")
+    pause(0.2)
 
-console.print(table, justify="center")
+pause(1)
+
+# STEP 3
+step("STEP 3: AGGREGATE RESULTS")
+
+table = Table(box=box.ROUNDED, width=58)
+table.add_column("Model", style="white")
+table.add_column("Score", justify="center", style="cyan")
+table.add_column("Bias", justify="center")
+table.add_column("Trust", justify="center")
+
+table.add_row("Claude 3.5", "9.2", "[green]Low[/]", "[green]94%[/]")
+table.add_row("GPT-4", "8.8", "[yellow]Med[/]", "[green]89%[/]")
+table.add_row("Gemini", "9.0", "[green]Low[/]", "[green]91%[/]")
+table.add_row("Grok-2", "8.6", "[green]Low[/]", "[yellow]87%[/]")
+table.add_row("Perplexity", "9.1", "[green]Low[/]", "[green]92%[/]")
+
+console.print(table)
+pause(1.5)
+
+# STEP 4
+step("STEP 4: CONSENSUS SCORE")
+
+console.print("  Model Agreement:    [bold green]HIGH[/] (4/5 within 0.5 pts)")
+pause(0.4)
+console.print("  Outlier Detection:  [green]None[/]")
+pause(0.4)
+console.print("  Confidence Level:   [bold green]94%[/]\n")
+pause(0.8)
+
+score_panel = Panel(
+    Align.center(
+        "[bold green]8.9 / 10[/]\n\n"
+        "[green]" + "█" * 36 + "[/][dim]" + "░" * 4 + "[/]\n\n"
+        "[bold]VERDICT: HIGHLY RELIABLE[/]"
+    ),
+    title="[bold yellow]CONSENSUS SCORE[/]",
+    border_style="green",
+    width=55
+)
+console.print(score_panel)
 pause(2)
 
-# SCENE 6: Result
-clear()
-console.print("\n" * 3)
-console.print(Panel("""
-[bold green]
-                    ████████████████████████
-                    ██                    ██
-                    ██    FINAL SCORE     ██
-                    ██                    ██
-                    ██      7.8 / 10      ██
-                    ██                    ██
-                    ██   ✅ SHARE THIS    ██
-                    ██                    ██
-                    ████████████████████████
-[/bold green]
+# STEP 5
+step("STEP 5: FACT CHECK CLAIMS")
 
-[bold]CONSENSUS:[/bold] 4 out of 5 AIs agree - this article is reliable.
-""", title="📊 THE VERDICT", border_style="green", width=60), justify="center")
-pause(3)
+claims = Table(box=box.SIMPLE, width=58)
+claims.add_column("Claim", style="white", width=32)
+claims.add_column("Status", justify="center", width=12)
+claims.add_column("Source", width=12)
 
-# SCENE 7: CTA
-clear()
-console.print("\n" * 4)
-console.print("[bold yellow]         ⭐ NEVER SHARE FAKE NEWS AGAIN ⭐[/bold yellow]", justify="center")
+claims.add_row("AI accuracy of 94.2%", "[green]Verified[/]", "NIH Study")
+claims.add_row("FDA approval pending", "[green]Verified[/]", "FDA.gov")
+claims.add_row("10,000 patient trial", "[green]Verified[/]", "ClinicalTrials")
+claims.add_row("Cost reduction 60%", "[yellow]Partial[/]", "Estimate")
+
+console.print(claims)
+pause(1.5)
+
+# STEP 6
+step("STEP 6: EXPORT REPORT")
+
+console.print("  [green]>[/] Report saved: [cyan]./reports/analysis.json[/]")
+console.print("  [green]>[/] PDF export:   [cyan]./reports/analysis.pdf[/]")
+pause(1)
+
+# FOOTER
 console.print()
-console.print("[bold white]           github.com/jjshay/news-intelligence[/bold white]", justify="center")
-console.print()
-console.print("[dim]                  pip install -r requirements.txt[/dim]", justify="center")
-console.print("[dim]                  python demo.py[/dim]", justify="center")
+footer = Panel(
+    Align.center(
+        "[dim]Claude | GPT-4 | Gemini | Grok | Perplexity[/]\n"
+        "[bold cyan]github.com/jjshay/news-intelligence[/]"
+    ),
+    title="[dim]News Intelligence v2.1[/]",
+    border_style="dim",
+    width=55
+)
+console.print(footer)
 pause(3)
